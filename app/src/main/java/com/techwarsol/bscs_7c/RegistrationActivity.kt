@@ -54,7 +54,6 @@ class RegistrationActivity : AppCompatActivity() {
                 ).show()
 
             } else {
-
                 auth.createUserWithEmailAndPassword(email , password)
                     .addOnCompleteListener { results->
                         if (results.isSuccessful){
