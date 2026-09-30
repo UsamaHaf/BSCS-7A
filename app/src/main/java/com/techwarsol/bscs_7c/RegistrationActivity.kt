@@ -4,34 +4,43 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Bundle
+import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.auth.FirebaseAuth
 import com.techwarsol.bscs_7c.databinding.ActivityRegistrationBinding
 
 class RegistrationActivity : AppCompatActivity() {
 
     lateinit var binding: ActivityRegistrationBinding
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    lateinit var auth: FirebaseAuth
 
+
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_registration)
 
         binding = ActivityRegistrationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        auth = FirebaseAuth.getInstance()
+
         setDOBPicker()
+        setSpinnerData()
 
         binding.btnSignUP.setOnClickListener {
+
+            binding.pbLoader.visibility = View.VISIBLE
+            binding.btnSignUP.visibility = View.GONE
 
             val userName = binding.etUserName.text.toString()
             val phone = binding.etPhone.text.toString()
             val email = binding.etEmail.text.toString()
             val dob = binding.etDOB.text.toString()
             val password = binding.etPassword.toString()
+
 
             if (userName.isEmpty()) {
                 Toast.makeText(this@RegistrationActivity, "Enter You UserName", Toast.LENGTH_SHORT)
@@ -46,14 +55,27 @@ class RegistrationActivity : AppCompatActivity() {
 
             } else {
 
-                val intent = Intent(this@RegistrationActivity , LoginActivity::class.java)
+                auth.createUserWithEmailAndPassword(email , password)
+                    .addOnCompleteListener { results->
+                        if (results.isSuccessful){
 
-                intent.putExtra("welcomeText", "Welcome Mr. ${userName}")
+                            binding.pbLoader.visibility = View.GONE
+                            binding.btnSignUP.visibility = View.VISIBLE
 
-                startActivity(intent)
+                            val intent = Intent(this@RegistrationActivity , LoginActivity::class.java)
+                            intent.putExtra("welcomeText", "Welcome Mr. ${userName}")
+                            startActivity(intent)
+                            Toast.makeText(this@RegistrationActivity, "SignUp Success", Toast.LENGTH_SHORT).show()
 
-                Toast.makeText(this@RegistrationActivity, "SignUp Success", Toast.LENGTH_SHORT)
-                    .show()
+                        }else{
+                            Toast.makeText(this@RegistrationActivity, "SignUp Fail", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+
+                    .addOnFailureListener { exception ->
+                        Toast.makeText(this@RegistrationActivity, exception.toString(), Toast.LENGTH_SHORT).show()
+                    }
+
 
 
             }
@@ -62,6 +84,16 @@ class RegistrationActivity : AppCompatActivity() {
         }
 
 
+    }
+
+    private fun setSpinnerData() {
+         val provinces = arrayOf("Select Province" , "Punjab", "NWFP", "KPK", "Islamabad")
+
+        val provinceAdapter = ArrayAdapter(this@RegistrationActivity,
+            androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, provinces)
+
+        provinceAdapter.setDropDownViewResource(androidx.appcompat.R.layout.support_simple_spinner_dropdown_item)
+        binding.spSelectProvince.adapter = provinceAdapter
     }
 
     private fun setDOBPicker() {

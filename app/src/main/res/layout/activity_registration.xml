@@ -21,6 +21,13 @@
         android:textSize="32sp"
         android:textStyle="bold" />
 
+    <ImageView
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_gravity="center"
+        android:src="@drawable/sample_img" />
+
+
     <EditText
         android:id="@+id/etUserName"
         android:layout_width="match_parent"
@@ -62,18 +69,27 @@
         android:focusable="false"
         android:hint="Enter DOB" />
 
-    <!--<Spinner
+    <Spinner
         android:id="@+id/spSelectProvince"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp" />
--->
+
     <Button
         android:id="@+id/btnSignUP"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="SignUP" />
+
+    <ProgressBar
+
+        android:id="@+id/pbLoader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="8dp"
+        android:visibility="gone" />
 
 
 </LinearLayout>
