@@ -4,11 +4,14 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.icu.util.Calendar
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import com.techwarsol.bscs_7c.Model.User
 import com.techwarsol.bscs_7c.databinding.ActivityRegistrationBinding
 
 class RegistrationActivity : AppCompatActivity() {
@@ -16,6 +19,7 @@ class RegistrationActivity : AppCompatActivity() {
     lateinit var binding: ActivityRegistrationBinding
 
     lateinit var auth: FirebaseAuth
+    lateinit var database: FirebaseDatabase
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,6 +30,7 @@ class RegistrationActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         auth = FirebaseAuth.getInstance()
+        database = FirebaseDatabase.getInstance()
 
         setDOBPicker()
         setSpinnerData()
@@ -37,9 +42,10 @@ class RegistrationActivity : AppCompatActivity() {
 
             val userName = binding.etUserName.text.toString()
             val phone = binding.etPhone.text.toString()
-            val email = binding.etEmail.text.toString()
-            val dob = binding.etDOB.text.toString()
-            val password = binding.etPassword.toString()
+            val email = binding.etEmail.text.toString().trim()
+            val dob = binding.etDOB.text.toString().trim()
+            val password = binding.etPassword.text.toString().trim()
+            val spinnerData = binding.spSelectProvince.selectedItem.toString()
 
 
             if (userName.isEmpty()) {
@@ -55,42 +61,83 @@ class RegistrationActivity : AppCompatActivity() {
 
             } else {
 
-                auth.createUserWithEmailAndPassword(email , password)
-                    .addOnCompleteListener { results->
-                        if (results.isSuccessful){
+                auth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { results ->
+                        if (results.isSuccessful) {
 
-                            binding.pbLoader.visibility = View.GONE
-                            binding.btnSignUP.visibility = View.VISIBLE
+                            val uid = auth.uid
+                            if (uid != null) {
+                                database.reference.child("User").child(uid)
+                                    .setValue(
+                                        User(
+                                            userName,
+                                            email,
+                                            password,
+                                            dob,
+                                            phone,
+                                            spinnerData
+                                        )
+                                    )
+                                    .addOnCompleteListener { task ->
+                                        if(task.isSuccessful){
 
-                            val intent = Intent(this@RegistrationActivity , LoginActivity::class.java)
-                            intent.putExtra("welcomeText", "Welcome Mr. ${userName}")
-                            startActivity(intent)
-                            Toast.makeText(this@RegistrationActivity, "SignUp Success", Toast.LENGTH_SHORT).show()
+                                            binding.pbLoader.visibility = View.GONE
+                                            binding.btnSignUP.visibility = View.VISIBLE
 
-                        }else{
-                            Toast.makeText(this@RegistrationActivity, "SignUp Fail", Toast.LENGTH_SHORT).show()
+                                            val intent =
+                                                Intent(this@RegistrationActivity, LoginActivity::class.java)
+                                            intent.putExtra("welcomeText", "Welcome Mr. ${userName}")
+                                            startActivity(intent)
+                                            Toast.makeText(
+                                                this@RegistrationActivity,
+                                                "SignUp Success",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            binding.txtRegistration.text = " ${password}"
+
+                                        }else{
+
+                                            Toast.makeText(
+                                                this@RegistrationActivity,
+                                                "Adding User Data Failed",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+
+                                        }
+                                    }
+
+                            }
+
+
+
+                        } else {
+                            Toast.makeText(
+                                this@RegistrationActivity,
+                                "SignUp Fail",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
 
                     .addOnFailureListener { exception ->
-                        Toast.makeText(this@RegistrationActivity, exception.toString(), Toast.LENGTH_SHORT).show()
+                        binding.txtRegistration.text = exception.toString()
+                        Toast.makeText(
+                            this@RegistrationActivity,
+                            exception.toString(),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
-
-
-
             }
-
-
         }
-
-
     }
 
     private fun setSpinnerData() {
-         val provinces = arrayOf("Select Province" , "Punjab", "NWFP", "KPK", "Islamabad")
+        val provinces = arrayOf("Select Province", "Punjab", "NWFP", "KPK", "Islamabad")
 
-        val provinceAdapter = ArrayAdapter(this@RegistrationActivity,
-            androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, provinces)
+        val provinceAdapter = ArrayAdapter(
+            this@RegistrationActivity,
+            androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, provinces
+        )
 
         provinceAdapter.setDropDownViewResource(androidx.appcompat.R.layout.support_simple_spinner_dropdown_item)
         binding.spSelectProvince.adapter = provinceAdapter

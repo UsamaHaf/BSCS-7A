@@ -50,8 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/etEmailLogin"
             android:layout_marginTop="8dp"
-            android:hint="Enter Password"
-            android:inputType="textPassword" />
+            android:hint="Enter Password" />
 
         <Button
             android:id="@+id/btnLogin"
