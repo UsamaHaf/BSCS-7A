@@ -78,6 +78,7 @@ class RegistrationActivity : AppCompatActivity() {
                                             spinnerData
                                         )
                                     )
+
                                     .addOnCompleteListener { task ->
                                         if(task.isSuccessful){
 
