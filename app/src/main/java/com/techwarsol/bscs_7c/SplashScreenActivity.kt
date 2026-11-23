@@ -30,10 +30,10 @@ class SplashScreenActivity : AppCompatActivity() {
             val currentUser = auth.currentUser
 
             if(currentUser != null){
-                val intent = Intent(this , HomePageActivity::class.java)
+                val intent = Intent(this , ApiUserActivity::class.java)
                 startActivity(intent)
             }else{
-                val intent = Intent(this , RegistrationActivity::class.java)
+                val intent = Intent(this , ApiUserActivity::class.java)
                 startActivity(intent)
             }
 
